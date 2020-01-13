@@ -80,12 +80,10 @@ namespace EarthLiveSharp
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
-            scraper.size = Cfg.size;
-            scraper.zoom = Cfg.zoom;
-            scraper.image_folder = Cfg.image_folder;
-            scraper.image_source = Cfg.image_source;
-            scraper.UpdateImage();
-            Wallpaper.Set(scraper.image_folder+"\\wallpaper.bmp");
+            System.Threading.Thread.Sleep(10000); // wait 10 secs for Internet reconnection after system resume.
+            Scrap_wrapper.UpdateImage();
+            if (Cfg.setwallpaper)
+                Wallpaper.Set(Cfg.image_folder+"\\wallpaper.bmp");
         }
 
         private void Form2_Deactivate(object sender, EventArgs e)
@@ -140,21 +138,18 @@ namespace EarthLiveSharp
         //All logic pertaining to starting the service
         private void startLogic()
         {
-            scraper.size = Cfg.size;
-            scraper.zoom = Cfg.zoom;
-            scraper.image_folder = Cfg.image_folder;
-            scraper.image_source = Cfg.image_source;
-            scraper.last_imageID = "0"; // reset the scraper record.
+            Scrap_wrapper.ResetState();
             if (!serviceRunning)
             {
                 button_start.Enabled = false;
                 button_stop.Enabled = true;
                 button_settings.Enabled = false;
-                scraper.UpdateImage();
+                Scrap_wrapper.UpdateImage();
                 timer1.Interval = Cfg.interval * 1000 * 60;
                 timer1.Start();
                 Wallpaper.SetDefaultStyle();
-                Wallpaper.Set(scraper.image_folder + "\\wallpaper.bmp");
+                if (Cfg.setwallpaper)
+                    Wallpaper.Set(Cfg.image_folder + "\\wallpaper.bmp");
                 serviceRunning = true;
                 runningLabel.Text = "    Running";
                 runningLabel.ForeColor = Color.DarkGreen;
@@ -180,6 +175,11 @@ namespace EarthLiveSharp
                 stopService.Enabled = false;
                 startService.Enabled = true;
             }
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            Scrap_wrapper.CleanCDN();
         }
 
     }
